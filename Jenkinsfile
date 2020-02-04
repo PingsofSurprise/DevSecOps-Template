@@ -55,6 +55,13 @@ node {
     } 
         
 	stage ('Source Composition Analysis') {
+
+		sh """
+			echo "PATH = ${PATH}"
+        	echo "M2_HOME = ${M2_HOME}"
+		  """
+
+					
 	    catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
 			sh "git clone ${appRepoURL} || true" 
 				repoName = sh(returnStdout: true, script: """echo \$(basename ${appRepoURL.trim()})""").trim()
