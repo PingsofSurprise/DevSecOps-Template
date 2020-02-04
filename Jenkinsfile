@@ -70,7 +70,7 @@ node {
 					sh "npm install"
 				}
 			}
-	  
+	  		mvn dependency:tree -DoutputType=dot --file="DevSecOps-Template/pom.xml"
             snykSecurity projectName: '$BUILD_NUMBER', snykInstallation: 'SnykSec', snykTokenId: 'snyk-token', targetFile: 'DevSecOps-Template/pom.xml'
 		   
 			def snykFile = readFile "snyk_report.html"
