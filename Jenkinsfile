@@ -56,11 +56,6 @@ node {
         
 	stage ('Source Composition Analysis') {
 
-		sh """
-			echo "PATH = ${PATH}"
-        	echo "M2_HOME = ${M2_HOME}"
-		  """
-
 					
 	    catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
 			sh "git clone ${appRepoURL} || true" 
@@ -76,7 +71,7 @@ node {
 				}
 			}
 	  
-            snykSecurity failOnIssues: false, projectName: '$BUILD_NUMBER', severity: 'high', snykInstallation: 'SnykSec', snykTokenId: 'snyk-token', targetFile: "${repoName}/${app_type}"
+            snykSecurity projectName: '$BUILD_NUMBER', snykInstallation: 'SnykSec', snykTokenId: 'snyk-token', targetFile: 'DevSecOps-Template/pom.xml'
 		   
 			def snykFile = readFile "snyk_report.html"
 			if (snykFile.exists()) {
