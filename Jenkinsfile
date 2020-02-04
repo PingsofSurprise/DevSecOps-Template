@@ -16,6 +16,8 @@ def workspace="";
 
 node {
 
+	tool name: 'mvn', type: 'maven'
+
     stage ('Checkout SCM') {
 	    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
             checkout scm
@@ -54,7 +56,6 @@ node {
         
 	stage ('Source Composition Analysis') {
 	    catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-			
 			sh "git clone ${appRepoURL} || true" 
 				repoName = sh(returnStdout: true, script: """echo \$(basename ${appRepoURL.trim()})""").trim()
 				repoName=sh(returnStdout: true, script: """echo ${repoName} | sed 's/.git//g'""").trim()
