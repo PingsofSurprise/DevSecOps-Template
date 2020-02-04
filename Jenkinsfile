@@ -70,7 +70,7 @@ node {
 					sh "npm install"
 				}
 			}
-	  		sh "mvn dependency:tree -DoutputType=dot"
+	  		sh "/var/jenkins_home/tools/hudson.tasks.Maven_MavenInstallation/mvn/bin/mvn dependency:tree -DoutputType=dot"
             snykSecurity projectName: '$BUILD_NUMBER', snykInstallation: 'SnykSec', snykTokenId: 'snyk-token', targetFile: 'DevSecOps-Template/pom.xml'
 		   
 			def snykFile = readFile "snyk_report.html"
@@ -89,7 +89,7 @@ node {
 			if (appType.equalsIgnoreCase("Java")) {
 				withSonarQubeEnv('sonarqube') {
 					dir("${repoName}"){
-						sh "mvn clean package sonar:sonar"
+						sh "/var/jenkins_home/tools/hudson.tasks.Maven_MavenInstallation/mvn/bin/mvn clean package sonar:sonar"
 					}
 				}
 			
