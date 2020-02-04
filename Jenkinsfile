@@ -106,7 +106,14 @@ node {
             sh """ echo "$dockerImage" > anchore_images"""
             anchore 'anchore_images'
 	    }
-    }     
+    } 
+	
+	stage('Deployment') {  
+		sh "docker kill tomcat"
+		sh "docker rm tomcat"
+		sh "docker build -t mytomcat:latest ."
+		sh "docker run -d -p 8081:8080 --name tomcat mytomcat"
+	}  
 
 	
 }
