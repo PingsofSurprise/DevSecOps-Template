@@ -54,17 +54,17 @@ node {
         
 	stage ('Source Composition Analysis') {
 	    catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+			
 			sh "git clone ${appRepoURL} || true" 
 				repoName = sh(returnStdout: true, script: """echo \$(basename ${appRepoURL.trim()})""").trim()
 				repoName=sh(returnStdout: true, script: """echo ${repoName} | sed 's/.git//g'""").trim()
 		
 			if (appType.equalsIgnoreCase("Java")) {
-			app_type = "pom.xml"	
-			}
-			else {
-			app_type = "package.json"
-			dir ("${repoName}") {
-				sh "npm install"
+				app_type = "pom.xml"	
+			} else {
+				app_type = "package.json"
+				dir ("${repoName}") {
+					sh "npm install"
 				}
 			}
 	  
