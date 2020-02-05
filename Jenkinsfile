@@ -61,7 +61,7 @@ node {
 
 		withEnv( ["PATH+MAVEN=${tool mvn_version}/bin"] ) {
 			sh """
-				cd DevSecOps-Template && mvn test
+				mvn test
 				"""
 		}	
 
@@ -70,7 +70,6 @@ node {
 	stage ('OSSIndex Analysis') {
 		withEnv( ["PATH+MAVEN=${tool mvn_version}/bin"] ) {
 			sh """
-				cd DevSecOps-Template
 				mvn clean install -Dmaven.test.skip=true net.ossindex:ossindex-maven-plugin:audit --fail-at-end -Daudit.output=$WORKSPACE/OSSIndex-05.txt  -Daudit.failOnError=false	
 			"""
 		}
@@ -84,7 +83,7 @@ node {
 			
 				withSonarQubeEnv('sonar') {
 					dir("${repoName}"){
-						sh "cd DevSecOps-Template && /var/jenkins_home/tools/hudson.tasks.Maven_MavenInstallation/mvn/bin/mvn clean package sonar:sonar -Dsonar.login=5868fb7d146ca88bfda3d651fd14f770d11bb3d6 -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=jayasimha537 -Dsonar.projectKey=webapp537"
+						sh "/var/jenkins_home/tools/hudson.tasks.Maven_MavenInstallation/mvn/bin/mvn clean package sonar:sonar -Dsonar.login=5868fb7d146ca88bfda3d651fd14f770d11bb3d6 -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=jayasimha537 -Dsonar.projectKey=webapp537"
 					}
 				}
 			
