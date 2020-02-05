@@ -57,10 +57,19 @@ node {
 
 	}
 
+	stage ('maven test') {
+
+		withEnv( ["PATH+MAVEN=${tool mvn_version}/bin"] ) {
+			sh """
+				mvn test
+				"""
+		}	
+
+	}
+
 	stage ('OSSIndex Analysis') {
 		withEnv( ["PATH+MAVEN=${tool mvn_version}/bin"] ) {
 			sh """
-			    git clone ${appRepoURL}
 				cd DevSecOps-Template
 				mvn clean install -Dmaven.test.skip=true net.ossindex:ossindex-maven-plugin:audit --fail-at-end -Daudit.output=$WORKSPACE/OSSIndex-05.txt  -Daudit.failOnError=false	
 			"""
