@@ -71,7 +71,7 @@ node {
     stage ('SAST') {
 	    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
 			
-				withSonarQubeEnv('sonarqube') {
+				withSonarQubeEnv('sonar') {
 					dir("${repoName}"){
 						sh "/var/jenkins_home/tools/hudson.tasks.Maven_MavenInstallation/mvn/bin/mvn clean package sonar:sonar -Dsonar.login=5868fb7d146ca88bfda3d651fd14f770d11bb3d6 -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=jayasimha537 -Dsonar.projectKey=webapp537"
 					}
