@@ -11,10 +11,6 @@
   <properties>
   	<maven.build.timestamp.format>MM.yyyy</maven.build.timestamp.format>
 		<yearMonth>${maven.build.timestamp}</yearMonth>
-    <sonar.projectKey>hackcgi</sonar.projectKey>
-    <sonar.organization>jayasimha537</sonar.organization>
-    <sonar.host.url>https://sonarcloud.io</sonar.host.url>
-    <sonar.login>aac0ac82bff27614f5dbba5fa16debc19e2af037</sonar.login>
 		<sonar.projectName>WebApp-demo</sonar.projectName>
 		<sonar.projectVersion>${yearMonth}</sonar.projectVersion>
 		<sonar.language>java</sonar.language>
