@@ -60,7 +60,7 @@ node {
 	stage ('OSSIndex Analysis') {
 		withEnv( ["PATH+MAVEN=${tool mvn_version}/bin"] ) {
 			sh """
-				mvn clean install -Dmaven.test.skip=true net.ossindex:ossindex-maven-plugin:audit --fail-at-end  -Daudit.failOnError=false	
+				mvn clean install -Dmaven.test.skip=true net.ossindex:ossindex-maven-plugin:audit --fail-at-end -Daudit.output=OSSIndex.txt  -Daudit.failOnError=false	
 			"""
 		}
 	}
