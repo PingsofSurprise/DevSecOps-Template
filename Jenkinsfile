@@ -71,9 +71,9 @@ node {
 	}
 
 	stage ('OSSIndex Analysis') {
-
-		mvn clean install -Dmaven.test.skip=true net.ossindex:ossindex-maven-plugin:audit --fail-at-end -Daudit.output="${WORKSPACE}/$(date +%Y)/$(date +"%b")/$(date +"%d")".txt -Daudit.failOnError=false	
-
+		sh """
+			mvn clean install -Dmaven.test.skip=true net.ossindex:ossindex-maven-plugin:audit --fail-at-end -Daudit.output="${WORKSPACE}/$(date +%Y)/$(date +"%b")/$(date +"%d")".txt -Daudit.failOnError=false	
+		"""
 	}
 
 
