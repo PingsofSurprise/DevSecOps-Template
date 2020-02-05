@@ -1,9 +1,9 @@
 properties ([
   parameters ([
     string(name: 'appRepoURL', value: "", description: "Application's git repository"),
-    string(name: 'dockerImage', value: "", description: "docker Image with tag"),
+    //string(name: 'dockerImage', value: "", description: "docker Image with tag"),
     //string(name: 'targetURL', value: "", description: "Web application's URL"),
-    choice(name: 'appType', choices: ['Java', 'Node', 'Angular'], description: 'Type of application'),
+    //choice(name: 'appType', choices: ['Java', 'Node', 'Angular'], description: 'Type of application'),
     //string(name: 'hostMachineName', value: "", description: "Hostname of the machine"),
     //string(name: 'hostMachineIP', value: "", description: "Public IP of the host machine")
     //password(name: 'hostMachinePassword', value: "", description: "Password of the target machine")
@@ -16,7 +16,8 @@ def workspace="";
 
 node {
 
-	tool name: 'mvn', type: 'maven'
+	mvn = tool "mvn"
+    def mvn_version = 'mvn'
 
     stage ('Checkout SCM') {
 	    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
@@ -25,21 +26,14 @@ node {
 	    }
     }
   
-    stage ('pre-build setup') {
-	    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-	      sh """
-              docker-compose -f Sonarqube/sonar.yml up -d
-              docker-compose -f Anchore-Engine/docker-compose.yaml up -d
-              """
-	    }
-    }
-        
+       
     stage ('Check secrets') {
 	    catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
             sh """
             rm trufflehog || true
-            docker run gesellix/trufflehog --json --regex ${appRepoURL} > trufflehog
-            cat trufflehog
+            docker run --name truffle-scan gesellix/trufflehog --json --regex ${appRepoURL} > trufflehog
+            cat trufflehog 
+			docker rm truffle-scan
             """
 	  
 			def truffle = readFile "trufflehog"
@@ -53,43 +47,44 @@ node {
 			}
 		}
     } 
-        
-	stage ('Source Composition Analysis') {
 
-					
-	    catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-			sh "git clone ${appRepoURL} || true" 
-				repoName = sh(returnStdout: true, script: """echo \$(basename ${appRepoURL.trim()})""").trim()
-				repoName=sh(returnStdout: true, script: """echo ${repoName} | sed 's/.git//g'""").trim()
-		
-			if (appType.equalsIgnoreCase("Java")) {
-				app_type = "pom.xml"	
-			} else {
-				app_type = "package.json"
-				dir ("${repoName}") {
-					sh "npm install"
-				}
-			}
-	  		sh "/var/jenkins_home/tools/hudson.tasks.Maven_MavenInstallation/mvn/bin/mvn dependency:tree -DoutputType=dot"
-            snykSecurity projectName: '$BUILD_NUMBER', snykInstallation: 'SnykSec', snykTokenId: 'snyk-token', targetFile: 'DevSecOps-Template/pom.xml'
-		   
-			def snykFile = readFile "snyk_report.html"
-			if (snykFile.exists()) {
-			throw new Exception("Vulnerable dependencies found!")    
-			}
-			else {
-			echo "Please enter the app repo URL"
-				currentBuild.Result = "FAILURE"
-			}   	    
-	   }
+	stage ('OWASP Analysis') {
+
+		sh '''
+
+			rm owasp* || true
+			wget "https://raw.githubusercontent.com/cehkunal/webapp/master/owasp-dependency-check.sh"
+			chmod +x owasp-dependency-check.sh
+			bash owasp-dependency-check.sh
+			cat /var/lib/jenkins/OWASP-Dependency-Check/reports/dependency-check-report.xml
+
+		 '''
+
 	}
+        
+	stage ('Snyk Analysis') {
+
+		withEnv( ["PATH+MAVEN=${tool mvn_version}/bin"] ) {
+			snykSecurity organisation: 'pingsofsurprise', projectName: 'webapp', snykInstallation: 'SnykSec', snykTokenId: 'snyk-token'
+		}	
+
+	}
+
+	stage ('OSSIndex Analysis') {
+
+		mvn clean install -Dmaven.test.skip=true net.ossindex:ossindex-maven-plugin:audit --fail-at-end -Daudit.output="${WORKSPACE}/$(date +%Y)/$(date +"%b")/$(date +"%d")".txt -Daudit.failOnError=false	
+
+	}
+
+
+	
         
     stage ('SAST') {
 	    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-			if (appType.equalsIgnoreCase("Java")) {
+			
 				withSonarQubeEnv('sonarqube') {
 					dir("${repoName}"){
-						sh "/var/jenkins_home/tools/hudson.tasks.Maven_MavenInstallation/mvn/bin/mvn clean package sonar:sonar"
+						sh "/var/jenkins_home/tools/hudson.tasks.Maven_MavenInstallation/mvn/bin/mvn clean package sonar:sonar -Dsonar.login=5868fb7d146ca88bfda3d651fd14f770d11bb3d6 -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=jayasimha537 -Dsonar.projectKey=webapp537"
 					}
 				}
 			
@@ -99,25 +94,10 @@ node {
 						error "Pipeline aborted due to quality gate failure: ${qg.status}"    
 					}	
 				}
-			}
+			
         }
 	}
         
-    stage ('Container Image Scan') {
-        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-	    sh "rm anchore_images || true"
-            sh """ echo "$dockerImage" > anchore_images"""
-            anchore 'anchore_images'
-	    }
-    } 
-	
-	stage('Deployment') {  
-		sh "docker kill tomcat"
-		sh "docker rm tomcat"
-		sh "docker build -t mytomcat:latest ."
-		sh "docker run -d -p 8081:8080 --name tomcat mytomcat"
-	}  
-
 	
 }
        
