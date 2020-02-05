@@ -48,19 +48,6 @@ node {
 		}
     } 
 
-	stage ('OWASP Analysis') {
-
-		sh '''
-
-			rm owasp* || true
-			wget "https://raw.githubusercontent.com/cehkunal/webapp/master/owasp-dependency-check.sh"
-			chmod +x owasp-dependency-check.sh
-			bash owasp-dependency-check.sh
-			cat /var/lib/jenkins/OWASP-Dependency-Check/reports/dependency-check-report.xml
-
-		 '''
-
-	}
         
 	stage ('Snyk Analysis') {
 
