@@ -7,6 +7,18 @@
   <version>1.0-SNAPSHOT</version>
   <name>WebApp Maven Webapp</name>
   <url>http://maven.apache.org</url>
+
+  <properties>
+  	<maven.build.timestamp.format>MM.yyyy</maven.build.timestamp.format>
+		<yearMonth>${maven.build.timestamp}</yearMonth>
+		<sonar.projectVersion>${yearMonth}</sonar.projectVersion>
+		<sonar.language>java</sonar.language>
+		<sonar.sourceEncoding>UTF-8</sonar.sourceEncoding>
+		<testng.version>6.9.4</testng.version>
+		<maven.javadoc.plugin.version>2.9</maven.javadoc.plugin.version>
+		<findbugs.maven.plugin.version>3.0.4</findbugs.maven.plugin.version>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -18,4 +30,88 @@
   <build>
     <finalName>WebApp</finalName>
   </build>
+
+  <profiles>
+		<profile>
+			<id>coverage</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<version>2.20</version>
+					</plugin>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>build-helper-maven-plugin</artifactId>
+						<version>1.8</version>
+						<executions>
+							<execution>
+								<id>add-test-source</id>
+								<phase>generate-test-sources</phase>
+								<goals>
+									<goal>add-test-source</goal>
+								</goals>
+								<configuration>
+									<sources>
+										<source>src/test/java</source>
+									</sources>
+								</configuration>
+							</execution>
+							<execution>
+								<id>add-test-resource</id>
+								<phase>generate-test-resources</phase>
+								<goals>
+									<goal>add-test-resource</goal>
+								</goals>
+								<configuration>
+									<resources>
+										<resource>
+											<directory>src/main/resources</directory>
+										</resource>
+									</resources>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-compiler-plugin</artifactId>
+						<configuration>
+							<source>1.8</source>
+							<target>1.8</target>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.sonarsource.scanner.maven</groupId>
+						<artifactId>sonar-maven-plugin</artifactId>
+						<version>3.7.0.1746</version>
+					</plugin>
+
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<version>${maven.javadoc.plugin.version}</version>
+						<executions>
+							<execution>
+								<id>attach-javadocs</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+								<configuration>
+									<nonavbar>true</nonavbar>
+									<additionalparam>-Xdoclint:none</additionalparam>
+									<failOnError>false</failOnError>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+		</profile>
+	</profiles>
+
 </project>
